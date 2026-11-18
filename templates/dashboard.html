@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard - Money Stocking</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="navbar">
+        <h2>💰 Money Stocking</h2>
+        <a href="/logout" class="btn-logout">Logout</a>
+    </div>
+
+    <div class="container">
+        <div class="top-section">
+            <div class="card chart-card">
+                <h3>Ringkasan Keuangan</h3>
+                <div style="max-width: 300px; margin: 0 auto;">
+                    <canvas id="myChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="card form-card">
+                <h3>Catat Transaksi Baru</h3>
+                <form action="/tambah" method="POST">
+                    <input type="date" name="tanggal" required>
+                    <input type="text" name="keterangan" placeholder="Keterangan (cth: Gaji, Beli ATK)" required>
+                    <select name="tipe">
+                        <option value="Pemasukan">Pemasukan</option>
+                        <option value="Pengeluaran">Pengeluaran</option>
+                    </select>
+                    <input type="number" name="nominal" placeholder="Nominal (cth: 50000)" required>
+                    <button type="submit">Simpan Transaksi</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card table-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3>Riwayat Transaksi</h3>
+                <a href="/export" class="btn-export">⬇ Export Laporan (CSV)</a>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tanggal</th>
+                        <th>Keterangan</th>
+                        <th>Tipe</th>
+                        <th>Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for t in transaksi %}
+                    <tr>
+                        <td>{{ t['tanggal'] }}</td>
+                        <td>{{ t['keterangan'] }}</td>
+                        <td><span class="badge {{ t['tipe'] }}">{{ t['tipe'] }}</span></td>
+                        <td>Rp {{ "{:,.0f}".format(t['nominal']) }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" style="text-align: center; color: #888;">Belum ada transaksi.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('myChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pemasukan', 'Pengeluaran'],
+                datasets: [{
+                    data: [{{ masuk }}, {{ keluar }}],
+                    backgroundColor: ['#2ecc71', '#e74c3c'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
